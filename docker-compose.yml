@@ -1,0 +1,149 @@
+services:
+  # Superset Web Application
+  superset:
+    build:
+      context: ./superset
+      dockerfile: Dockerfile
+    container_name: superset
+    restart: always
+    ports:
+      - "8088:8088"
+    environment:
+      SUPERSET_CONFIG_PATH: "/app/superset_config.py"
+      PYTHONPATH: "/app"
+      FLASK_APP: "superset"
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_FIRSTNAME: ${ADMIN_FIRSTNAME}
+      ADMIN_LASTNAME: ${ADMIN_LASTNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+    volumes:
+      - ./superset/superset_config.py:/app/superset_config.py
+    depends_on:
+      - postgres
+      - redis
+    command: [
+      "gunicorn",
+      "--bind", "0.0.0.0:8088",
+      "--workers", "4",
+      "--worker-class", "gevent",
+      "--timeout", "120",
+      "superset.app:create_app()"
+    ]
+
+  # Superset Initializer (DB upgrade + Admin user creation)
+  superset-init:
+    build:
+      context: ./superset
+      dockerfile: Dockerfile
+    container_name: superset-init
+    restart: "no"
+    environment:
+      SUPERSET_CONFIG_PATH: "/app/superset_config.py"
+      PYTHONPATH: "/app"
+      FLASK_APP: "superset"
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_FIRSTNAME: ${ADMIN_FIRSTNAME}
+      ADMIN_LASTNAME: ${ADMIN_LASTNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+    volumes:
+      - ./superset/superset_config.py:/app/superset_config.py
+    depends_on:
+      - postgres
+      - redis
+    entrypoint: [
+      "/bin/bash",
+      "-c",
+      "
+      superset db upgrade &&
+      if ! superset fab list-users | grep -q ${ADMIN_USERNAME}; then
+        superset fab create-admin \
+          --username ${ADMIN_USERNAME} \
+          --firstname ${ADMIN_FIRSTNAME} \
+          --lastname ${ADMIN_LASTNAME} \
+          --email ${ADMIN_EMAIL} \
+          --password ${ADMIN_PASSWORD};
+      fi &&
+      superset init
+      "
+    ]
+
+  # PostgreSQL database for Superset metadata
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: superset
+      POSTGRES_USER: superset
+      POSTGRES_PASSWORD: superset
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  # Redis broker for Celery
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # Celery worker for background tasks
+  celery_worker:
+    build:
+      context: ./superset
+      dockerfile: Dockerfile
+    container_name: celery_worker
+    restart: always
+    depends_on:
+      - redis
+      - superset
+    environment:
+      SUPERSET_CONFIG_PATH: "/app/superset_config.py"
+      PYTHONPATH: "/app"
+      SQLALCHEMY_DATABASE_URI: "postgresql://superset:superset@postgres:5432/superset"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+    volumes:
+      - ./superset/superset_config.py:/app/superset_config.py
+    command: [
+      "celery",
+      "--app=superset.tasks.celery_app:app",
+      "worker",
+      "--loglevel=INFO"
+    ]
+
+  # Celery beat for periodic scheduled tasks
+  celery_beat:
+    build:
+      context: ./superset
+      dockerfile: Dockerfile
+    container_name: celery_beat
+    restart: always
+    depends_on:
+      - redis
+      - superset
+    environment:
+      SUPERSET_CONFIG_PATH: "/app/superset_config.py"
+      PYTHONPATH: "/app"
+      SQLALCHEMY_DATABASE_URI: "postgresql://superset:superset@postgres:5432/superset"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+    volumes:
+      - ./superset/superset_config.py:/app/superset_config.py
+      - beat_data:/beat_data
+    command: [
+      "celery",
+      "--app=superset.tasks.celery_app:app",
+      "beat",
+      "--loglevel=INFO",
+      "--schedule", "/beat_data/celerybeat-schedule"
+    ]
+volumes:
+  pg_data: {}
+  beat_data: {}
