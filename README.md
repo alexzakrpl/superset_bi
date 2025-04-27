@@ -28,7 +28,7 @@ superset_bi/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-organization/superset_bi.git
+git clone https://github.com/alexzakrpl/superset_bi.git
 cd superset_bi
 ```
 
