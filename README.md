@@ -43,7 +43,7 @@ Default environment variables provided:
 ADMIN_USERNAME=admin
 ADMIN_FIRSTNAME=Admin
 ADMIN_LASTNAME=User
-ADMIN_EMAIL=alexzakr@gmail.com
+ADMIN_EMAIL=youremail@mailbox.com
 ADMIN_PASSWORD=admin
 SUPERSET_SECRET_KEY=this_should_be_really_secure
 ```
