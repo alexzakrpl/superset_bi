@@ -31,6 +31,7 @@ docker compose up -d
 echo "Currently running containers:"
 docker compose ps
 
-echo "Superset Production Deployment Completed Successfully!"
-echo "To stop the services, run: docker compose down"
+echo -e "\nSuperset Production Deployment Completed Successfully!"
+echo "To open Superset just open host ip:8088 or localhost at port 8088"
 
+echo -e "\nTo stop the services, run: docker compose down"
