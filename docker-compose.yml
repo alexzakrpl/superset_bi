@@ -59,6 +59,7 @@ services:
       "-c",
       "
       superset db upgrade &&
+      superset load-examples &&
       if ! superset fab list-users | grep -q ${ADMIN_USERNAME}; then
         superset fab create-admin \
           --username ${ADMIN_USERNAME} \
