@@ -1,11 +1,7 @@
-# This script automates the deployment of Apache Superset in a production environment on AWS EC2 using Docker.
-# It includes steps for loading environment variables, checking Docker installation, creating required volumes,
-# building Docker images, and starting the Superset services.
-# It also logs all output to a log file for easier debugging and tracking of the deployment process.
 #!/bin/bash
 set -e
 
-# Redirect all output to a log file
+# Redirect output to log file
 exec > >(tee -a /var/log/superset_deploy.log) 2>&1
 
 echo "Starting Superset Production Deployment..."
@@ -21,31 +17,33 @@ else
   exit 1
 fi
 
-# Step 2: Check if Docker is installed and running
+# Step 2: Check Docker availability
 if ! command -v docker &> /dev/null; then
   echo "Docker is not installed or not in PATH. Exiting."
   exit 1
 fi
 
-# Step 3: Create required docker volumes (only if they don't exist)
-echo "Creating required Docker volumes..."
+# Step 3: Create required Docker volumes if missing
+echo "Ensuring Docker volumes exist..."
 docker volume inspect pg_data >/dev/null 2>&1 || docker volume create pg_data
 docker volume inspect beat_data >/dev/null 2>&1 || docker volume create beat_data
 
-# Step 4: Build images
+# Step 4: Build images with no cache if needed
 echo "Building Docker images..."
-docker compose build
+docker compose build --no-cache --pull
 
-# Step 5: Bring up Superset services
-echo "Starting Superset services..."
-docker compose up -d
+# Step 5: Run superset-init only
+echo "Running Superset initialization (superset-init)..."
+docker compose run --rm superset-init
 
-# Step 6: Show running containers
+# Step 6: Bring up all services
+echo "Starting all Superset services..."
+docker compose up -d --force-recreate
+
+# Step 7: List running containers
 echo "Currently running containers:"
 docker compose ps
 
 echo -e "\nSuperset Production Deployment Completed Successfully!"
-echo "To open Superset just open host ip:8088 or localhost at port 8088"
-
-echo -e "\nTo stop the services, run: docker compose down"
-
+echo "Open Superset at: http://<host-ip>:8088 or http://localhost:8088"
+echo "To stop the services, run: docker compose down"

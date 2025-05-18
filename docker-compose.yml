@@ -54,10 +54,14 @@ services:
     depends_on:
       - postgres
       - redis
-    entrypoint: [
-      "/bin/bash",
-      "-c",
-      "
+    entrypoint: >
+      /bin/bash -c '
+      echo "Waiting for Postgres to be ready...";
+      until pg_isready -h postgres -p 5432; do
+        echo "Waiting for Postgres to be ready...";
+        sleep 2;
+      done;
+      echo "Postgres is ready. Proceeding with setup...";
       superset db upgrade &&
       if ! superset fab list-users | grep -q ${SUPERSET_ADMIN_USERNAME}; then
         superset fab create-admin \
@@ -68,16 +72,16 @@ services:
           --password ${SUPERSET_ADMIN_PASSWORD};
       fi &&
       superset init
-      "
-    ]
-  # # superset load-examples &&
+      '
+
+ # superset load-examples &&
   # PostgreSQL database for Superset metadata
   postgres:
     image: postgres:15
     container_name: postgres
     restart: always
     ports:
-      - "5432:5432"
+      - "${SUPERSET_POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_DB: superset
       POSTGRES_USER: superset
@@ -111,6 +115,11 @@ services:
       CELERY_RESULT_BACKEND: "redis://redis:6379/0"
     volumes:
       - ./superset/superset_config.py:/app/superset_config.py
+    healthcheck:
+      test: ["CMD-SHELL", "celery --app=superset.tasks.celery_app:app inspect ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     command: [
       "celery",
       "--app=superset.tasks.celery_app:app",
@@ -137,6 +146,11 @@ services:
     volumes:
       - ./superset/superset_config.py:/app/superset_config.py
       - beat_data:/beat_data
+    healthcheck:
+      test: ["CMD-SHELL", "celery --app=superset.tasks.celery_app:app inspect ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     command: [
       "celery",
       "--app=superset.tasks.celery_app:app",
