@@ -12,11 +12,11 @@ services:
       SUPERSET_CONFIG_PATH: "/app/superset_config.py"
       PYTHONPATH: "/app"
       FLASK_APP: "superset"
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      ADMIN_FIRSTNAME: ${ADMIN_FIRSTNAME}
-      ADMIN_LASTNAME: ${ADMIN_LASTNAME}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME}
+      ADMIN_FIRSTNAME: ${SUPERSET_ADMIN_FIRSTNAME}
+      ADMIN_LASTNAME: ${SUPERSET_ADMIN_LASTNAME}
+      ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
       SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
     volumes:
       - ./superset/superset_config.py:/app/superset_config.py
@@ -43,11 +43,11 @@ services:
       SUPERSET_CONFIG_PATH: "/app/superset_config.py"
       PYTHONPATH: "/app"
       FLASK_APP: "superset"
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      ADMIN_FIRSTNAME: ${ADMIN_FIRSTNAME}
-      ADMIN_LASTNAME: ${ADMIN_LASTNAME}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME}
+      ADMIN_FIRSTNAME: ${SUPERSET_ADMIN_FIRSTNAME}
+      ADMIN_LASTNAME: ${SUPERSET_ADMIN_LASTNAME}
+      ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
       SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
     volumes:
       - ./superset/superset_config.py:/app/superset_config.py
@@ -59,19 +59,18 @@ services:
       "-c",
       "
       superset db upgrade &&
-      superset load-examples &&
-      if ! superset fab list-users | grep -q ${ADMIN_USERNAME}; then
+      if ! superset fab list-users | grep -q ${SUPERSET_ADMIN_USERNAME}; then
         superset fab create-admin \
-          --username ${ADMIN_USERNAME} \
-          --firstname ${ADMIN_FIRSTNAME} \
-          --lastname ${ADMIN_LASTNAME} \
-          --email ${ADMIN_EMAIL} \
-          --password ${ADMIN_PASSWORD};
+          --username ${SUPERSET_ADMIN_USERNAME} \
+          --firstname ${SUPERSET_ADMIN_FIRSTNAME} \
+          --lastname ${SUPERSET_ADMIN_LASTNAME} \
+          --email ${SUPERSET_ADMIN_EMAIL} \
+          --password ${SUPERSET_ADMIN_PASSWORD};
       fi &&
       superset init
       "
     ]
-
+  # # superset load-examples &&
   # PostgreSQL database for Superset metadata
   postgres:
     image: postgres:15
