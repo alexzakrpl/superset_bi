@@ -8,6 +8,12 @@ services:
     restart: always
     ports:
       - "8088:8088"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
       SUPERSET_CONFIG_PATH: "/app/superset_config.py"
       PYTHONPATH: "/app"

@@ -85,13 +85,14 @@ docker compose run --rm superset-init
 docker compose up -d --force-recreate
 
 # Step 7: Wait for Superset to be ready
-echo "Waiting for Superset to be available at http://localhost:8088..."
+echo "Waiting for Superset container to become healthy..."
 for i in {1..30}; do
-  if curl -sSf http://localhost:8088/health > /dev/null; then
-    echo "Superset is ready."
+  status=$(docker inspect -f '{{.State.Health.Status}}' superset 2>/dev/null || echo "not_found")
+  echo "Health status: $status"
+  if [ "$status" = "healthy" ]; then
+    echo "Superset is healthy."
     break
   fi
-  echo "Waiting... ($i)"
   sleep 5
 done
 
