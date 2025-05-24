@@ -44,6 +44,9 @@ docker compose up -d --force-recreate
 echo "Currently running containers:"
 docker compose ps
 
+echo 'Loading example data...'
+docker exec -it superset superset load-examples
+
 echo -e "\nSuperset Production Deployment Completed Successfully!"
 echo "Open Superset at: http://<host-ip>:8088 or http://localhost:8088"
 echo "To stop the services, run: docker compose down"
