@@ -3,6 +3,7 @@ from celery.schedules import crontab
 
 # Database connection (Superset metadata)
 SQLALCHEMY_DATABASE_URI = "postgresql://superset:superset@postgres:5432/superset"
+SQLALCHEMY_EXAMPLES_URI = SQLALCHEMY_DATABASE_URI
 
 # Celery broker (Redis)
 CELERY_BROKER_URL = "redis://redis:6379/0"
@@ -48,10 +49,15 @@ CORS_OPTIONS = {
 }
 
 # Secret key for session management (should be set securely via env)
-SECRET_KEY = os.getenv("SUPERSET_SECRET_KEY", "thisISaSECRET_key_change_me")
+SECRET_KEY = os.getenv("SUPERSET_SECRET_KEY")
 
 # Session cookie settings
-SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
+ENABLE_PROXY_FIX = True
+SESSION_COOKIE_SECURE = False # True
+WTF_CSRF_ENABLED = True
+PREFERRED_URL_SCHEME = "http"
 
+#Temporary sqLite connection
+ALLOW_SQLITE_DATABASES = True

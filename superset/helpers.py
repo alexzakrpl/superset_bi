@@ -70,6 +70,8 @@ misc_dash_slices: set[str] = set()
 # Utility functions
 # ---------------------------------------------------------------------------
 
+# added db for examples
+SQLALCHEMY_EXAMPLES_URI = SQLALCHEMY_DATABASE_URI
 
 def get_table_connector_registry() -> Any:
     """Return the SqlaTable registry so we can mock it in unit tests."""
