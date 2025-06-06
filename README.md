@@ -17,8 +17,9 @@ superset_bi/
 ├── superset/                  # Custom Superset configuration
 │   ├── Dockerfile             # Custom image build for Superset
 │   ├── requirements.txt       # Additional Python dependencies
-│   └── superset_config.py     # Superset configuration (PostgreSQL, Redis, Caching)
-├── .env                       # Default environment variables (should be updated before deployment)
+│   ├── superset_config.py     # Superset configuration (PostgreSQL, Redis, Caching)
+│   └── helpers.py             # Updated file with fixed examples bug
+├── .env.example               # Example of default environment variables (should be updated before deployment and saved as .env)
 ├── deploy_superset.sh         # Bash script for full project deployment
 └── README.md                  # This documentation file
 ```
@@ -40,12 +41,14 @@ It is strongly recommended to **change all passwords and secret keys** before th
 Default environment variables provided:
 
 ```env
-ADMIN_USERNAME=admin
-ADMIN_FIRSTNAME=Admin
-ADMIN_LASTNAME=User
-ADMIN_EMAIL=youremail@mailbox.com
-ADMIN_PASSWORD=admin
+SUPERSET_ADMIN_USERNAME=admin
+SUPERSET_ADMIN_FIRSTNAME=Admin
+SUPERSET_ADMIN_LASTNAME=User
+SUPERSET_ADMIN_EMAIL=youremail@mailbox.com
+SUPERSET_ADMIN_PASSWORD=securepassword
 SUPERSET_SECRET_KEY=this_should_be_really_secure
+SUPERSET_WEBSERVER_PORT=8088
+SUPERSET_POSTGRES_PORT=5432
 ```
 
 You must replace `SUPERSET_SECRET_KEY` with a strong unique value.
