@@ -105,6 +105,14 @@ Log in using the credentials defined in `.env`.
 
 ---
 
+## Example Data Load and Custom Fixes
+
+- This deployment bypasses a known bug with loading example datasets, which has been fixed in the Superset repository but not yet included in the latest release.
+- The build process replaces the default `helpers.py` with a patched version from the merged pull request to ensure reliable loading of sample dashboards and charts.  (The bug report is here https://github.com/apache/superset/issues/29915)
+- The project is configured to use PostgreSQL as the default metadata database. All demo dashboards and charts will be populated into this PostgreSQL instance instead of SQLite.
+
+---
+
 ## Important Notes
 
 - Default Superset admin account is created automatically during the initial setup.
